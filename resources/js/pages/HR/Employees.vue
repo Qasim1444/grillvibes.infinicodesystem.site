@@ -70,9 +70,13 @@
           <option value="">— none —</option>
           <option v-for="d in props.designations" :key="d.id" :value="d.id">{{ d.name }}</option>
         </FormField>
-        <FormField v-model="form.place_id" label="Place / branch" type="select" :error="form.errors.place_id">
+        <FormField v-model="form.branch_id" label="Branch" type="select" :error="form.errors.branch_id">
           <option value="">— none —</option>
-          <option v-for="p in props.places" :key="p.id" :value="p.id">{{ p.name }}</option>
+          <option v-for="b in props.branches" :key="b.id" :value="b.id">{{ b.name }}</option>
+        </FormField>
+        <FormField v-model="form.place_id" label="Place" type="select" :error="form.errors.place_id">
+          <option value="">— none —</option>
+          <option v-for="p in filteredPlaces" :key="p.id" :value="p.id">{{ p.name }}</option>
         </FormField>
         <FormField v-model="form.phone" label="Phone" placeholder="Phone" :error="form.errors.phone" />
         <FormField v-model="form.cnic" label="CNIC / ID" placeholder="00000-0000000-0" :error="form.errors.cnic" />
@@ -155,6 +159,7 @@ const props = defineProps({
   filters: { type: Object, default: () => ({ search: "", status: "" }) },
   designations: { type: Array, default: () => [] },
   places: { type: Array, default: () => [] },
+  branches: { type: Array, default: () => [] },
   statuses: { type: Array, default: () => [] },
   stats: { type: Object, default: () => ({ total: 0, active: 0, payroll: 0 }) },
 });
@@ -174,6 +179,9 @@ const rows = computed(() => props.employees?.data ?? []);
 
 const search = ref(props.filters?.search ?? "");
 const status = ref(props.filters?.status ?? "");
+const filteredPlaces = computed(() =>
+  form.branch_id ? props.places.filter((p) => String(p.branch_id) === String(form.branch_id)) : props.places
+);
 
 // One reload path for both filters so changing either resets to page 1.
 let searchTimer = null;
@@ -206,6 +214,7 @@ const blank = {
   date_of_birth: "",
   designation_id: "",
   place_id: "",
+  branch_id: "",
   joining_date: "",
   leaving_date: "",
   employment_status: "active",
@@ -234,6 +243,7 @@ const editRow = (e) => {
     date_of_birth: e.date_of_birth ?? "",
     designation_id: e.designation_id ?? "",
     place_id: e.place_id ?? "",
+    branch_id: e.branch_id ?? "",
     joining_date: e.joining_date ?? "",
     leaving_date: e.leaving_date ?? "",
     employment_status: e.employment_status ?? "active",
@@ -242,6 +252,12 @@ const editRow = (e) => {
   form.clearErrors();
   showModal.value = true;
 };
+
+watch(() => form.branch_id, (branchId) => {
+  if (form.place_id && branchId && String(props.places.find((p) => String(p.id) === String(form.place_id))?.branch_id) !== String(branchId)) {
+    form.place_id = "";
+  }
+});
 
 const save = () => {
   const opts = { preserveScroll: true, onSuccess: () => (showModal.value = false) };

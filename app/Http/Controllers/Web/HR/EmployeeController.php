@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web\HR;
 
 use App\Http\Controllers\Controller;
 use App\Models\Designation;
+use App\Models\Branch;
 use App\Models\Place;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -28,7 +29,7 @@ class EmployeeController extends Controller
 
         $employees = User::query()
             ->employees()
-            ->with(['designation:id,name', 'place:id,name'])
+            ->with(['designation:id,name', 'place:id,name,branch_id', 'place.branch:id,name'])
             ->when($search !== '', fn ($q) => $q->where(function ($w) use ($search) {
                 $w->where('name', 'like', "%{$search}%")
                     ->orWhere('employee_code', 'like', "%{$search}%")
@@ -53,6 +54,8 @@ class EmployeeController extends Controller
                 'designation_name' => $u->designation?->name,
                 'place_id' => $u->place_id,
                 'place_name' => $u->place?->name,
+                'branch_id' => $u->place?->branch_id,
+                'branch_name' => $u->place?->branch?->name,
                 'joining_date' => $u->joining_date?->toDateString(),
                 'leaving_date' => $u->leaving_date?->toDateString(),
                 'employment_status' => $u->employment_status,
@@ -64,7 +67,8 @@ class EmployeeController extends Controller
             'employees' => $employees,
             'filters' => ['search' => $search, 'status' => $status],
             'designations' => Designation::orderBy('name')->get(['id', 'name']),
-            'places' => Place::orderBy('name')->get(['id', 'name']),
+            'places' => Place::orderBy('name')->get(['id', 'name', 'branch_id']),
+            'branches' => Branch::where('status', true)->orderBy('name')->get(['id', 'name']),
             'statuses' => User::EMPLOYMENT_STATUSES,
             'stats' => [
                 'total' => User::employees()->count(),
