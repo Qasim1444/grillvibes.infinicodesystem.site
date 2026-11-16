@@ -242,6 +242,17 @@ class WhatsAppChatController extends Controller
             ]);
             $body = $res->json();
 
+            // Do not resurrect messages that were explicitly cleared locally.
+            // The WhatsApp service may still return its old remote history.
+            $clearedAt = Cache::get($this->historyClearedCacheKey($number));
+            if ($clearedAt) {
+                $body['messages'] = array_values(array_filter(
+                    $body['messages'] ?? [],
+                    fn ($msg) => ($timestamp = strtotime((string) ($msg['timestamp'] ?? ''))) === false
+                        || $timestamp > (int) $clearedAt
+                ));
+            }
+
             // Persist every message, and rewrite each media URL to an absolute
             // one so the browser loads it from the WhatsApp host, not this app.
             foreach (($body['messages'] ?? []) as $i => $msg) {
@@ -349,12 +360,18 @@ class WhatsAppChatController extends Controller
 
         $messages = WhatsAppMessage::where('number', $number)->delete();
         $calls = WhatsAppCall::where('number', $number)->delete();
+        Cache::forever($this->historyClearedCacheKey($number), now()->timestamp);
 
         return response()->json([
             'success' => true,
             'deleted' => ['messages' => $messages, 'calls' => $calls],
             'message' => 'WhatsApp messages and calls cleared from the database.',
         ]);
+    }
+
+    private function historyClearedCacheKey(string $number): string
+    {
+        return 'whatsapp_history_cleared:'.$number;
     }
 
     /**
