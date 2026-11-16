@@ -594,7 +594,7 @@ const getUnreadCount = (contact) => {
 };
 
 // ---- Shared formatting helpers ----
-const money = (v) => `$${Number(v || 0).toFixed(2)}`;
+const money = (v) => `Rs. ${Number(v || 0).toFixed(2)}`;
 const dateTime = (v) => (v ? new Date(v).toLocaleString('en-PK', { timeZone: 'Asia/Karachi' }) : "—");
 const TYPE_LABELS = { delivery: "Delivery", dining: "Dining", "on-way": "On the way" };
 const typeLabel = (t) => TYPE_LABELS[t] || t || "—";
