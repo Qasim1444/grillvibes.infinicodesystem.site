@@ -84,7 +84,7 @@
                 <span>👥 {{ entry.party_size }}</span>
                 <span v-if="entry.guest_phone">📞 {{ entry.guest_phone }}</span>
                 <span v-if="entry.status === 'waiting'" class="res__wait-time">⏱ {{ entry.wait_minutes }}min waiting</span>
-                <span v-if="entry.estimated_wait_minutes" class="res__wait-est">
+                <span v-if="entry.status === 'waiting' && entry.estimated_wait_minutes" class="res__wait-est">
                   Est: {{ entry.estimated_wait_minutes }}min
                 </span>
                 <span v-if="entry.status === 'seated'" class="ui-badge ui-badge--success">Seated</span>
