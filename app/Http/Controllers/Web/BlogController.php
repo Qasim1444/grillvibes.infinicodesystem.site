@@ -10,6 +10,7 @@ use App\Models\BlogComment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -52,6 +53,8 @@ class BlogController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $this->validated($request);
+        $data['featured_image'] = $this->uploadedImage($request, $data['featured_image'] ?? null);
+        unset($data['featured_image_file']);
         $data['slug'] = $this->uniqueSlug($data['title']);
         $post = BlogPost::create($data);
         $post->categories()->sync($data['category_ids'] ?? []);
@@ -64,6 +67,12 @@ class BlogController extends Controller
     {
         $post = BlogPost::findOrFail($id);
         $data = $this->validated($request);
+        if ($request->hasFile('featured_image_file')) {
+            $data['featured_image'] = $this->uploadedImage($request, $post->featured_image);
+        } else {
+            unset($data['featured_image']);
+        }
+        unset($data['featured_image_file']);
 
         if ($data['title'] !== $post->title) {
             $data['slug'] = $this->uniqueSlug($data['title'], $post->id);
@@ -151,6 +160,7 @@ class BlogController extends Controller
             'excerpt' => 'nullable|string|max:1000',
             'body' => 'required|string',
             'featured_image' => 'nullable|string|max:255',
+            'featured_image_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:5120',
             'status' => 'required|in:draft,published,scheduled',
             'published_at' => 'nullable|date',
             'meta_title' => 'nullable|string|max:255',
@@ -160,6 +170,17 @@ class BlogController extends Controller
             'tag_ids' => 'nullable|array',
             'tag_ids.*' => 'integer|exists:blog_tags,id',
         ]);
+    }
+
+    private function uploadedImage(Request $request, ?string $current = null): ?string
+    {
+        if (! $request->hasFile('featured_image_file')) {
+            return $current;
+        }
+
+        $path = $request->file('featured_image_file')->store('blog', 'public');
+
+        return Storage::disk('public')->url($path);
     }
 
     private function uniqueSlug(string $title, ?int $ignoreId = null): string

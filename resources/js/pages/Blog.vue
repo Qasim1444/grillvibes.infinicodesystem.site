@@ -176,12 +176,13 @@
 
 
             <!-- FEATURED IMAGE -->
-            <FormField
-                v-model="form.featured_image"
-                label="Featured image URL"
-                placeholder="https://..."
-                :error="form.errors.featured_image"
-            />
+            <div class="editor-field">
+                <label class="ui-label" for="blog-featured-image">Featured image</label>
+                <input id="blog-featured-image" type="file" class="ui-input" accept="image/jpeg,image/png,image/webp,image/gif" @change="selectFeaturedImage" />
+                <p class="blog-form-hint">Choose an image from your browser (JPEG, PNG, WebP or GIF, max 5 MB).</p>
+                <img v-if="featuredImagePreview" :src="featuredImagePreview" alt="Featured image preview" class="blog-image-preview" />
+                <p v-if="form.errors.featured_image_file" class="ui-field__error">{{ form.errors.featured_image_file }}</p>
+            </div>
 
 
             <!-- STATUS / DATE -->
@@ -1007,6 +1008,8 @@ const form = useForm({
 
     featured_image: '',
 
+    featured_image_file: null,
+
     status: 'draft',
 
     published_at: '',
@@ -1609,6 +1612,8 @@ const resetForm = () => {
 
     form.featured_image = '';
 
+    form.featured_image_file = null;
+
     form.status = 'draft';
 
     form.published_at = '';
@@ -1689,6 +1694,8 @@ const editPost = (post) => {
     form.featured_image =
         post.featured_image ?? '';
 
+    form.featured_image_file = null;
+
 
     form.status =
         post.status ?? 'draft';
@@ -1764,20 +1771,24 @@ const savePost = () => {
 
     if (form.id) {
 
-        form.put(
-            `/blog/${form.id}`,
-            options
-        );
+        form.transform(data => ({ ...data, _method: 'put' })).post(`/blog/${form.id}`, { ...options, forceFormData: true });
 
     } else {
 
-        form.post(
-            '/blog',
-            options
-        );
+        form.post('/blog', { ...options, forceFormData: true });
 
     }
 
+};
+
+const featuredImagePreview = computed(() => {
+    if (form.featured_image_file instanceof File) return URL.createObjectURL(form.featured_image_file);
+    return form.featured_image || '';
+});
+
+const selectFeaturedImage = event => {
+    form.featured_image_file = event.target.files?.[0] ?? null;
+    form.clearErrors('featured_image_file');
 };
 
 
