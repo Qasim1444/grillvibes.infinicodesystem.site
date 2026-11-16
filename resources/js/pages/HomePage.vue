@@ -241,7 +241,7 @@
               </div>
 
               <div class="form-row">
-                <label>Phone<input v-model="reservation.guest_phone" type="tel" placeholder="+92 0000 0000000" required /></label>
+                <label>Phone<input :value="reservation.guest_phone" @input="reservation.guest_phone = $event.target.value.replace(/\D/g, '')" @keydown="allowPhoneKey" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="15" autocomplete="tel" placeholder="923000000000" required /></label>
                 <label>Occasion<input v-model="reservation.occasion" type="text" placeholder="Birthday, anniversary..." required /></label>
               </div>
 
@@ -373,6 +373,11 @@ watch([() => reservation.guests, () => reservation.date, () => reservation.time,
 	if (selectedTable && !isTableSuitable(selectedTable)) reservation.dining_table_id = null;
 });
 const reservationSent = ref(false);
+const allowPhoneKey = event => {
+  if (!/[0-9]/.test(event.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(event.key)) {
+    event.preventDefault();
+  }
+};
 const submitReservation = () => {
   reservation.clearErrors('dining_table_id');
   const selectedTable = tables.value.find(table => Number(table.id) === Number(reservation.dining_table_id));
