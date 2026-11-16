@@ -45,16 +45,17 @@ class ReservationController extends Controller
                 'ends_at'      => $r->endsAt()->toIso8601String(),
             ]);
 
-        $waitlist = WaitlistEntry::with('branch:id,name')
+        $waitlist = WaitlistEntry::with(['branch:id,name', 'diningTable:id,table_number'])
             ->whereDate('checked_in_at', $date)
             ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->whereIn('status', ['waiting', 'seated'])
             ->orderBy('checked_in_at')
             ->get()
             ->map(fn ($w) => [
-                ...$w->only('id', 'guest_name', 'guest_phone', 'party_size',
+                ...$w->only('id', 'guest_name', 'guest_phone', 'party_size', 'dining_table_id',
                              'status', 'checked_in_at', 'notified_at', 'estimated_wait_minutes', 'notes', 'branch_id'),
                 'branch_name' => $w->branch?->name,
+                'table_number' => $w->diningTable?->table_number,
                 'wait_minutes'=> $w->waitMinutes(),
             ]);
 
@@ -324,6 +325,7 @@ class ReservationController extends Controller
     {
         $data = $request->validate([
             'branch_id'              => 'nullable|exists:branches,id',
+            'dining_table_id'        => 'nullable|exists:dining_tables,id',
             'place_id'               => 'nullable|exists:places,id',
             'customer_id'            => 'nullable|exists:customers,id',
             'guest_name'             => 'required|string|max:255',
@@ -355,6 +357,7 @@ class ReservationController extends Controller
             'customer_id'             => 'sometimes|nullable|exists:customers,id',
             'party_size'              => 'sometimes|required|integer|min:1|max:50',
             'branch_id'               => 'sometimes|nullable|exists:branches,id',
+            'dining_table_id'         => 'sometimes|nullable|exists:dining_tables,id',
             'estimated_wait_minutes' => 'nullable|integer|min:1',
             'notes'                  => 'nullable|string|max:500',
             'notify'                 => 'nullable|boolean',

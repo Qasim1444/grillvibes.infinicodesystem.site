@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class WaitlistEntry extends Model
 {
     protected $fillable = [
-        'branch_id', 'place_id', 'guest_name', 'guest_phone', 'party_size',
+        'branch_id', 'place_id', 'dining_table_id', 'guest_name', 'guest_phone', 'party_size',
         'customer_id', 'status', 'checked_in_at', 'notified_at',
         'seated_at', 'estimated_wait_minutes', 'notes', 'created_by',
     ];
@@ -29,6 +29,11 @@ class WaitlistEntry extends Model
     public function place(): BelongsTo
     {
         return $this->belongsTo(Place::class);
+    }
+
+    public function diningTable(): BelongsTo
+    {
+        return $this->belongsTo(DiningTable::class);
     }
 
     public function customer(): BelongsTo

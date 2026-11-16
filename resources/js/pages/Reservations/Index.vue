@@ -82,6 +82,7 @@
               <div class="res__wait-name">{{ entry.guest_name }}</div>
               <div class="res__wait-meta">
                 <span>👥 {{ entry.party_size }}</span>
+                <span v-if="entry.table_number">🪑 {{ entry.table_number }}</span>
                 <span v-if="entry.guest_phone">📞 {{ entry.guest_phone }}</span>
                 <span v-if="entry.status === 'waiting'" class="res__wait-time">⏱ {{ entry.wait_minutes }}min waiting</span>
                 <span v-if="entry.status === 'waiting' && entry.estimated_wait_minutes" class="res__wait-est">
@@ -161,6 +162,12 @@
       <FormField v-model="wlForm.branch_id" label="Branch" type="select" :error="wlForm.errors.branch_id">
         <option value="">Select branch</option>
         <option v-for="b in props.branches" :key="b.id" :value="b.id">{{ b.name }}</option>
+      </FormField>
+      <FormField v-model="wlForm.dining_table_id" label="Table" type="select" :error="wlForm.errors.dining_table_id">
+        <option value="">— No table selected —</option>
+        <option v-for="t in props.tables" :key="t.id" :value="t.id" :disabled="t.status !== 'available' && String(t.id) !== String(wlForm.dining_table_id)">
+          {{ t.table_number }} (cap. {{ t.capacity }}){{ t.status !== 'available' ? ` — ${t.status}` : '' }}
+        </option>
       </FormField>
       <FormField v-model.number="wlForm.estimated_wait_minutes" label="Est. Wait (min)" type="number" min="1" placeholder="20" :error="wlForm.errors.estimated_wait_minutes" />
       <FormField v-model="wlForm.notes" label="Notes" type="textarea" :error="wlForm.errors.notes" />
@@ -289,7 +296,7 @@ const del = async id => {
 // Waitlist
 const showWaitlistModal = ref(false);
 const wlForm = useForm({ id: null, guest_name: '', guest_phone: '', customer_id: null, party_size: 2,
-  branch_id: '', estimated_wait_minutes: null, notes: '' });
+  branch_id: '', dining_table_id: '', estimated_wait_minutes: null, notes: '' });
 
 const onWaitlistCustomerPicked = customer => {
   if (!customer) {
@@ -305,7 +312,7 @@ const openWaitlistModal = (entry = null) => {
   if (entry) Object.assign(wlForm, {
     id: entry.id, guest_name: entry.guest_name, guest_phone: entry.guest_phone ?? '',
     customer_id: entry.customer_id ?? null, party_size: entry.party_size,
-    branch_id: entry.branch_id ?? '', estimated_wait_minutes: entry.estimated_wait_minutes ?? null,
+    branch_id: entry.branch_id ?? '', dining_table_id: entry.dining_table_id ?? '', estimated_wait_minutes: entry.estimated_wait_minutes ?? null,
     notes: entry.notes ?? '',
   });
   else wlForm.branch_id = defaultBranchId();
