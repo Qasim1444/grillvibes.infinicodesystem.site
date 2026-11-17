@@ -1,16 +1,6 @@
 <template>
   <div class="page">
     <PageHeader title="Attendance" subtitle="Mark the whole roster for a day, then save the sheet in one go.">
-      <template #actions>
-        <button
-          v-if="can('hr.attendance.create')"
-          class="ui-btn ui-btn--primary"
-          :disabled="saving || !sheet.length"
-          @click="saveSheet"
-        >
-          {{ saving ? "Saving…" : "Save Sheet" }}
-        </button>
-      </template>
     </PageHeader>
 
     <div class="att__bar ui-card ui-card-pad">
@@ -114,6 +104,14 @@
         <input v-model="row.note" class="ui-input" type="text" placeholder="Note" :disabled="!editable" />
       </template>
       <template #actions="{ row }">
+        <button
+          v-if="can('hr.attendance.create')"
+          class="ui-btn ui-btn--primary ui-btn--sm"
+          :disabled="saving || !sheet.length"
+          @click="saveSheet"
+        >
+          {{ saving ? "Saving…" : "Save Sheet" }}
+        </button>
         <button
           v-if="row.attendance_id && can('hr.attendance.delete')"
           class="ui-btn ui-btn--danger ui-btn--sm"

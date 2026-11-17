@@ -23,7 +23,9 @@
             <th v-for="col in columns" :key="col.key" :style="col.width ? { width: col.width } : null">
               {{ col.label }}
             </th>
-            <th v-if="$slots.actions" style="text-align: right">Actions</th>
+            <th v-if="$slots.actions" style="text-align: right">
+              <slot name="actions-header">Actions</slot>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -50,7 +52,9 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, useSlots } from "vue";
+
+const slots = useSlots();
 
 const props = defineProps({
   columns: { type: Array, required: true }, // [{ key, label, width?, format? }]
@@ -79,7 +83,7 @@ const queryValue = computed({
 });
 
 const totalColumns = computed(
-  () => props.columns.length + (props.index ? 1 : 0) + 1
+  () => props.columns.length + (props.index ? 1 : 0) + (slots.actions ? 1 : 0)
 );
 
 const filteredRows = computed(() => {
