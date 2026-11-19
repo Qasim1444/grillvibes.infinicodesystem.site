@@ -106,7 +106,7 @@
       <template #cell:earned_basic="{ row }">{{ money(row.earned_basic ?? row.basic) }}</template>
       <template #cell:overtime_amount="{ value }">{{ money(value) }}</template>
       <template #cell:deductions_amount="{ value }">{{ money(value) }}</template>
-      <template #cell:loan_deduction="{ value }">{{ money(value) }}</template>
+      <template #cell:loan_deduction="{ row, value }">{{ money(row.loan_amount ?? value) }}</template>
       <template #cell:gross="{ value }">{{ money(value) }}</template>
       <template #cell:net="{ value }">
         <strong>{{ money(value) }}</strong>

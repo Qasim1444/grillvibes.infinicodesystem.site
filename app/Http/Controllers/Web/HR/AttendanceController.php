@@ -96,6 +96,7 @@ class AttendanceController extends Controller
             // The day's own tallies are computed on the page so they stay live
             // while the sheet is being edited; this is month-to-date context.
             'monthSummary' => $this->monthSummary($date),
+            'monthlyReport' => $this->monthlyReport($date),
             'branches' => Branch::query()
                 ->orderBy('name')
                 ->get(['id', 'name', 'latitude', 'longitude', 'attendance_radius_meters', 'attendance_start_time']),
@@ -266,6 +267,44 @@ class AttendanceController extends Controller
                 ->whereBetween('date', [$date->copy()->startOfMonth(), $date->copy()->endOfMonth()])
                 ->distinct()
                 ->count('date'),
+        ];
+    }
+
+    /** Employee-level monthly attendance report for payroll review. */
+    private function monthlyReport(Carbon $date): array
+    {
+        $start = $date->copy()->startOfMonth();
+        $end = $date->copy()->endOfMonth();
+        $employees = User::query()->payable()->with('designation:id,name')->orderBy('name')->get(['id', 'name', 'employee_code', 'designation_id']);
+        $rows = Attendance::query()
+            ->whereIn('user_id', $employees->pluck('id'))
+            ->whereBetween('date', [$start, $end])
+            ->get(['user_id', 'date', 'status'])
+            ->keyBy(fn ($row) => $row->user_id.'|'.Carbon::parse($row->date)->toDateString());
+
+        return [
+            'month' => $date->format('Y-m'),
+            'month_label' => $date->format('F Y'),
+            'employees' => $employees->map(fn (User $employee) => [
+                'id' => $employee->id,
+                'name' => $employee->employee_code ? $employee->name.' ('.$employee->employee_code.')' : $employee->name,
+            ])->values()->all(),
+            'rows' => collect(range(0, $start->diffInDays($end)))->flatMap(function (int $offset) use ($start, $employees, $rows) {
+                $day = $start->copy()->addDays($offset);
+                $date = $day->toDateString();
+                return $employees->map(function (User $employee) use ($date, $day, $rows) {
+                    return [
+                        'id' => $date.'-'.$employee->id,
+                        'date' => $date,
+                        'day' => $day->format('D'),
+                        'employee' => $employee->name,
+                        'employee_id' => $employee->id,
+                        'employee_code' => $employee->employee_code,
+                        'designation' => $employee->designation?->name,
+                        'status' => $rows->get($employee->id.'|'.$date)?->status ?? 'not_marked',
+                    ];
+                });
+            })->values()->all(),
         ];
     }
 }

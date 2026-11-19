@@ -213,6 +213,8 @@ class PayrollController extends Controller
                     'overtime_amount' => (float) $p->overtime_amount,
                     'deductions_amount' => (float) $p->deductions_amount,
                     'loan_deduction' => (float) $p->loan_deduction,
+                    'loan_amount' => (float) $p->loan_deduction,
+                    'overtime' => (float) $p->overtime_amount,
                     'gross' => (float) $p->gross,
                     'net' => (float) $p->net,
                     'present_days' => (float) $p->present_days,

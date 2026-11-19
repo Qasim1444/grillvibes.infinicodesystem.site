@@ -26,10 +26,6 @@
       </div>
     </div>
 
-    <div v-if="dirty" class="ui-alert ui-alert--danger">
-      You have unsaved changes on this sheet — click <strong>Save Sheet</strong> before switching dates.
-    </div>
-
     <div v-if="can('hr.attendance.update')" class="att__settings ui-card ui-card-pad">
       <div>
         <strong>Branch attendance locations</strong>
@@ -54,6 +50,40 @@
       <StatCard :label="`On leave (${props.monthSummary.month})`" :value="props.monthSummary.leave" />
       <StatCard label="Days marked this month" :value="props.monthSummary.marked_days" />
     </div>
+
+    <div class="att__report ui-card ui-card-pad">
+      <div class="att__report-head">
+        <div>
+          <h3 class="att__report-title">Monthly Attendance Report</h3>
+          <p class="att__hint">{{ props.monthlyReport.month_label }} — date-wise totals for payroll review.</p>
+        </div>
+        <button class="ui-btn ui-btn--primary ui-btn--sm" @click="showReport = true">View Full Report</button>
+      </div>
+    </div>
+
+    <div v-if="dirty" class="ui-alert ui-alert--danger att__unsaved-alert">
+      You have unsaved changes on this sheet — click <strong>Save Sheet</strong> before switching dates.
+    </div>
+
+    <Modal v-model="showReport" title="Monthly Attendance Report" width="900px">
+      <div class="att__report-month">
+        <label class="ui-label" for="report-month">Month</label>
+        <input id="report-month" class="ui-input" type="month" :value="props.monthlyReport.month" @change="changeReportMonth($event.target.value)" />
+        <label class="ui-label" for="report-employee">Employee</label>
+        <select id="report-employee" v-model="reportEmployee" class="ui-select">
+          <option value="">All employees</option>
+          <option v-for="employee in props.monthlyReport.employees" :key="employee.id" :value="String(employee.id)">{{ employee.name }}</option>
+        </select>
+      </div>
+      <DataTable :columns="reportColumns" :rows="filteredReportRows" searchable search-placeholder="Filter report…" empty-text="No attendance report data.">
+        <template #cell:status="{ value }">
+          <span class="ui-badge" :class="badgeClass(value)">{{ label(value) }}</span>
+        </template>
+      </DataTable>
+      <template #footer>
+        <button class="ui-btn ui-btn--ghost" @click="showReport = false">Close</button>
+      </template>
+    </Modal>
 
     <!-- The whole roster for one day is a fixed, small set, so it is not paged:
          paging it would make "save the sheet" silently drop the other pages.
@@ -133,6 +163,7 @@ import AdminLayout from "../../layouts/AdminLayout.vue";
 import PageHeader from "../../components/ui/PageHeader.vue";
 import DataTable from "../../components/ui/DataTable.vue";
 import StatCard from "../../components/ui/StatCard.vue";
+import Modal from "../../components/ui/Modal.vue";
 import { usePermissions } from "../../composables/usePermissions";
 
 defineOptions({ layout: AdminLayout });
@@ -145,10 +176,13 @@ const props = defineProps({
   statuses: { type: Array, default: () => [] },
   filters: { type: Object, default: () => ({ search: "" }) },
   monthSummary: { type: Object, default: () => ({ month: "", present: 0, absent: 0, leave: 0, marked_days: 0 }) },
+  monthlyReport: { type: Object, default: () => ({ month_label: "", rows: [] }) },
   branches: { type: Array, default: () => [] },
 });
 
 const editable = computed(() => can("hr.attendance.create"));
+const showReport = ref(false);
+const reportEmployee = ref("");
 
 const columns = [
   { key: "name", label: "Employee" },
@@ -158,6 +192,14 @@ const columns = [
   { key: "check_out", label: "Out", width: "120px" },
   { key: "late_minutes", label: "Late (min)", width: "110px" },
   { key: "note", label: "Note" },
+];
+
+const reportColumns = [
+  { key: "date", label: "Date" },
+  { key: "day", label: "Day" },
+  { key: "employee", label: "Employee" },
+  { key: "designation", label: "Designation" },
+  { key: "status", label: "Status" },
 ];
 
 // Local editable copy — props are replaced wholesale on every Inertia reload.
@@ -198,6 +240,17 @@ const changeDate = async (value) => {
   if (dirty.value && !(await confirmDialog("You have unsaved changes. Discard them and load another date?"))) return;
   router.get("/hr/attendance", { date: value }, { preserveState: false, preserveScroll: true });
 };
+
+const changeReportMonth = (value) => {
+  if (!value) return;
+  router.get("/hr/attendance", { date: `${value}-01` }, { preserveState: false, preserveScroll: true });
+};
+
+const filteredReportRows = computed(() =>
+  reportEmployee.value
+    ? props.monthlyReport.rows.filter((row) => String(row.employee_id) === reportEmployee.value)
+    : props.monthlyReport.rows
+);
 
 const markAll = (status) => sheet.value.forEach((row) => (row.status = status));
 
@@ -253,7 +306,7 @@ const badgeClass = (s) =>
   flex-wrap: wrap;
   align-items: flex-end;
   gap: 20px;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 }
 
 .att__date {
@@ -276,7 +329,7 @@ const badgeClass = (s) =>
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  margin-bottom: 18px;
+  margin-bottom: 24px;
 }
 
 .att__name {
@@ -315,7 +368,7 @@ const badgeClass = (s) =>
 .att__settings {
   display: grid;
   gap: 12px;
-  margin-bottom: 18px;
+  margin-bottom: 24px;
 }
 
 .att__hint {
@@ -331,6 +384,50 @@ const badgeClass = (s) =>
   gap: 8px;
 }
 
+.att__report {
+  margin-top: 24px;
+  margin-bottom: 24px;
+  border: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--surface, #fff) 0%, var(--surface-soft, #f8fafc) 100%);
+}
+
+.att__unsaved-alert {
+  margin-top: 24px;
+  margin-bottom: 24px;
+}
+
+.att__report-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.att__report-title {
+  margin: 0 0 5px;
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+}
+
+.att__report-head .ui-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  border-radius: 999px;
+  padding-inline: 16px;
+}
+
+.att__report-month {
+  display: grid;
+  grid-template-columns: auto minmax(150px, 190px) auto minmax(180px, 1fr);
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 16px;
+}
+
 @media (max-width: 980px) {
   .stat-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -340,6 +437,24 @@ const badgeClass = (s) =>
   }
   .att__settings-row {
     grid-template-columns: repeat(2, 1fr);
+  }
+  .att__report-month {
+    grid-template-columns: auto 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .att__report-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .att__report-head .ui-btn {
+    width: 100%;
+  }
+
+  .att__report-month {
+    grid-template-columns: 1fr;
   }
 }
 </style>
