@@ -103,6 +103,7 @@
           <em>of {{ row.payable_days }}</em>
         </span>
       </template>
+      <template #cell:unpaid_leave_deduction="{ value }">{{ money(value) }}</template>
       <template #cell:earned_basic="{ row }">{{ money(row.earned_basic ?? row.basic) }}</template>
       <template #cell:overtime_amount="{ value }">{{ money(value) }}</template>
       <template #cell:deductions_amount="{ value }">{{ money(value) }}</template>
@@ -210,6 +211,10 @@
             <tr>
               <td>Absent / leave deducted</td>
               <td>{{ slip.absent_days }} day(s)</td>
+            </tr>
+            <tr>
+              <td>Unpaid leave</td>
+              <td>− {{ money(slip.unpaid_leave_deduction) }}</td>
             </tr>
             <tr>
               <td>Earned basic</td>
@@ -344,6 +349,7 @@ const columns = [
   { key: "name", label: "Employee" },
   { key: "designation", label: "Designation" },
   { key: "days", label: "Attendance" },
+  { key: "unpaid_leave_deduction", label: "Unpaid" },
   { key: "earned_basic", label: "Earned Basic" },
   { key: "overtime_amount", label: "Overtime" },
   { key: "deductions_amount", label: "Deductions" },

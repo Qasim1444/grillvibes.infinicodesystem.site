@@ -214,6 +214,11 @@ class PayrollController extends Controller
                     'deductions_amount' => (float) $p->deductions_amount,
                     'loan_deduction' => (float) $p->loan_deduction,
                     'loan_amount' => (float) $p->loan_deduction,
+                    'unpaid_leave_deduction' => round(
+                        (float) ($p->snapshot['unpaid_leave_deduction']
+                            ?? ((float) ($p->snapshot['daily_rate'] ?? 0) * (float) ($p->snapshot['unpaid_leave_days'] ?? 0))),
+                        2
+                    ),
                     'overtime' => (float) $p->overtime_amount,
                     'gross' => (float) $p->gross,
                     'net' => (float) $p->net,

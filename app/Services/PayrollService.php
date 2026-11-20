@@ -427,6 +427,7 @@ class PayrollService
 
         $basic = (float) $employee->basic_salary;
         $dailyRate = $payableDays > 0 ? $basic / $payableDays : 0.0;
+        $unpaidLeaveDeduction = round($dailyRate * count($unpaidLeaveDates), 2);
         $earnedBasic = round($dailyRate * ($payableDays - $absentDays), 2);
 
         $overtimeAmount = round((float) $overtimes->sum(fn ($o) => (float) $o->amount), 2);
@@ -468,6 +469,7 @@ class PayrollService
             'present_days' => round($presentDays, 1),
             'absent_days' => round($absentDays, 1),
             'leave_days' => round($paidLeaveDays + count($unpaidLeaveDates), 1),
+            'unpaid_leave_deduction' => $unpaidLeaveDeduction,
             'earned_basic' => $earnedBasic,
             'allowances' => $allowances,
             'overtime_amount' => $overtimeAmount,
@@ -488,6 +490,7 @@ class PayrollService
                 'leaves' => $leaveDetail,
                 'paid_leave_days' => round($paidLeaveDays, 1),
                 'unpaid_leave_days' => count($unpaidLeaveDates),
+                'unpaid_leave_deduction' => $unpaidLeaveDeduction,
                 'overtime' => $overtimes->map(fn ($o) => [
                     'date' => Carbon::parse($o->date)->toDateString(),
                     'hours' => (float) $o->hours,

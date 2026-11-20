@@ -1,12 +1,17 @@
 <template>
   <div class="page">
-    <PageHeader title="Loans & Advances" subtitle="Payroll collects one installment per active loan each month.">
+    <PageHeader title="Loans & Advances" subtitle="Active loans are deducted from salary automatically when payroll is marked paid.">
       <template #actions>
         <button v-if="can('hr.loans.create')" class="ui-btn ui-btn--primary" @click="openModal">+ Add Loan</button>
       </template>
     </PageHeader>
 
     <div v-if="flashError" class="ui-alert ui-alert--danger">{{ flashError }}</div>
+
+    <div class="ui-alert ui-alert--info ln__info">
+      Salary deduction is automatic through payroll. Use <strong>Manual pay</strong> only when the employee pays
+      outside payroll; both payments reduce the same outstanding balance.
+    </div>
 
     <div class="stat-grid">
       <StatCard label="Active Loans" :value="props.stats.active" />
@@ -72,7 +77,7 @@
           class="ui-btn ui-btn--success ui-btn--sm"
           @click="openRepay(row)"
         >
-          Repay
+          Manual pay
         </button>
         <button v-if="can('hr.loans.update')" class="ui-btn ui-btn--ghost ui-btn--sm" @click="editRow(row)">
           Edit
@@ -117,7 +122,7 @@
       </template>
     </Modal>
 
-    <Modal v-model="showRepay" title="Record Repayment">
+    <Modal v-model="showRepay" title="Record Manual Loan Payment">
       <p class="ln__hint">
         {{ active?.employee_name }} — outstanding <strong>{{ money(active?.outstanding) }}</strong>
       </p>
@@ -132,8 +137,8 @@
         <FormField v-model="repayForm.paid_on" label="Paid on" type="date" :error="repayForm.errors.paid_on" />
       </div>
       <p class="ln__note">
-        Use this only for repayments taken outside payroll — payroll collects the installment itself when a run
-        is marked paid.
+        This records an off-payroll payment and reduces the outstanding balance immediately. For salary deduction,
+        leave the loan active and mark the employee’s payroll run as paid.
       </p>
       <template #footer>
         <button class="ui-btn ui-btn--ghost" @click="showRepay = false">Cancel</button>
@@ -366,6 +371,10 @@ const label = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : "—");
   font-size: 0.85rem;
   color: var(--text-soft);
   margin: 0 0 12px;
+}
+
+.ln__info {
+  margin-bottom: 16px;
 }
 
 .ln__note {

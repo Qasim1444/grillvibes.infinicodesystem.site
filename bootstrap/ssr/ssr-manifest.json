@@ -245,7 +245,7 @@
     "/build/assets/FoodItems-wcKTTIDB.css"
   ],
   "resources/js/pages/ForgotPassword.vue": [
-    "/build/assets/ForgotPassword-BFrDgBPV.js"
+    "/build/assets/ForgotPassword-DbEEb3Rn.js"
   ],
   "resources/js/pages/Guest/QRMenu.vue": [
     "/build/assets/QRMenu-DIvJKtme.js",
@@ -291,12 +291,12 @@
     "/build/assets/Leaves-DR3_xn22.css"
   ],
   "resources/js/pages/HR/Loans.vue": [
-    "/build/assets/Loans-D3lbpTPC.js",
-    "/build/assets/Loans-EDs4fhR9.css"
+    "/build/assets/Loans-61sfZsvX.js",
+    "/build/assets/Loans-DjrSjuOc.css"
   ],
-  "resources/js/pages/HR/Loans.vue?vue&type=style&index=0&scoped=a34d3d15&lang.css": [
-    "/build/assets/Loans-D3lbpTPC.js",
-    "/build/assets/Loans-EDs4fhR9.css"
+  "resources/js/pages/HR/Loans.vue?vue&type=style&index=0&scoped=75b30c8d&lang.css": [
+    "/build/assets/Loans-61sfZsvX.js",
+    "/build/assets/Loans-DjrSjuOc.css"
   ],
   "resources/js/pages/HR/Overtime.vue": [
     "/build/assets/Overtime-DVmK2JM5.js",
@@ -307,12 +307,12 @@
     "/build/assets/Overtime-BPlNel3K.css"
   ],
   "resources/js/pages/HR/Payroll.vue": [
-    "/build/assets/Payroll-pYCTXno9.js",
-    "/build/assets/Payroll-BgCaHogs.css"
+    "/build/assets/Payroll-DWjFjbia.js",
+    "/build/assets/Payroll-B6crpS1L.css"
   ],
-  "resources/js/pages/HR/Payroll.vue?vue&type=style&index=0&scoped=86b1e441&lang.css": [
-    "/build/assets/Payroll-pYCTXno9.js",
-    "/build/assets/Payroll-BgCaHogs.css"
+  "resources/js/pages/HR/Payroll.vue?vue&type=style&index=0&scoped=19bbc143&lang.css": [
+    "/build/assets/Payroll-DWjFjbia.js",
+    "/build/assets/Payroll-B6crpS1L.css"
   ],
   "resources/js/pages/HomePage.vue": [
     "/build/assets/HomePage-BtF_i9eH.js",
@@ -482,7 +482,7 @@
     "/build/assets/QRCodes-BU41lNOc.css"
   ],
   "resources/js/pages/Register.vue": [
-    "/build/assets/Register-CK-ILYhd.js"
+    "/build/assets/Register-akIAgh-v.js"
   ],
   "resources/js/pages/Reports/FoodCost.vue": [
     "/build/assets/FoodCost-ZZPJjSMt.js",
@@ -533,10 +533,10 @@
     "/build/assets/Users-B0I83Eaj.css"
   ],
   "resources/js/services/api.js": [
-    "/build/assets/api-ZOQGIi9c.js"
+    "/build/assets/api-CWpZBU8R.js"
   ],
   "resources/js/services/http.js": [
-    "/build/assets/api-ZOQGIi9c.js"
+    "/build/assets/api-CWpZBU8R.js"
   ],
   "resources/js/services/whatsapp.js": [
     "/build/assets/Customers-DJr5Qt4B.js",
